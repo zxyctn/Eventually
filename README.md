@@ -8,4 +8,4 @@ A social platform for hosting events that is being developed as a term project f
 - Ibrahim Mammadov
 - Ali Babayev
 
-#### [Project Website](http://ibrahim.mammadov.ug.bilkent.edu.tr/eventually)
+#### [Project Website](http://dijkstra.ug.bcc.bilkent.edu.tr/~ahmet.malal/data/index.php)
