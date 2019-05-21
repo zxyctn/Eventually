@@ -1,0 +1,382 @@
+drop database ahmet_malal;
+create database ahmet_malal;
+use ahmet_malal;
+
+CREATE TABLE Country (
+name VARCHAR(32) PRIMARY KEY
+) ENGINE = InnoDB;
+
+CREATE TABLE City (
+name VARCHAR(32) PRIMARY KEY,
+country VARCHAR(32),
+FOREIGN KEY (country) REFERENCES Country (name) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE Category (
+name VARCHAR(32) PRIMARY KEY
+) ENGINE = InnoDB;
+
+CREATE TABLE Event ( event_id INT AUTO_INCREMENT,
+title VARCHAR(32), description VARCHAR(4096), date DATE, time TIME,
+address VARCHAR(256),
+city VARCHAR(32),
+country VARCHAR(32),
+privacy ENUM('Public', 'Private'), maxnumberofmember INT, profilepicture VARBINARY(8000),
+PRIMARY KEY (event_id),
+FOREIGN KEY (city) REFERENCES City (name) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE EventCategory (
+event_id INT ,
+category_name VARCHAR(32),
+FOREIGN KEY (event_id) REFERENCES Event (event_id) ON DELETE CASCADE,
+FOREIGN KEY (category_name) REFERENCES Category (name) ON DELETE CASCADE,
+PRIMARY KEY (event_id,category_name)
+) ENGINE = InnoDB;
+
+CREATE TABLE User (
+user_id INT AUTO_INCREMENT PRIMARY KEY,
+firstname VARCHAR(32) NOT NULL,
+lastname VARCHAR(32) NOT NULL,
+birthday DATE,
+email VARCHAR(32) UNIQUE NOT NULL, phone_no VARCHAR(32), address VARCHAR(256),
+nickname VARCHAR(32) UNIQUE NOT NULL, password VARCHAR(1024) NOT NULL,
+gender ENUM('Male', 'Female'), profilepicture VARBINARY(8000)
+) ENGINE = InnoDB;
+
+
+
+CREATE TABLE EventHost ( event_id INT,
+host_id INT,
+FOREIGN KEY (event_id) REFERENCES Event (event_id) ON DELETE CASCADE,
+FOREIGN KEY (host_id) REFERENCES User (user_id) ON DELETE CASCADE,
+PRIMARY KEY (event_id, host_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE UserRate ( event_id INT,
+user_id INT,
+rate INT,
+FOREIGN KEY (event_id) REFERENCES Event (event_id) ON DELETE CASCADE,
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE, 
+PRIMARY KEY (event_id, user_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE EventParticipants ( event_id INT,
+user_id INT,
+usersDecision ENUM('coming', 'not coming','not replied', 'interested'),
+FOREIGN KEY (event_id) REFERENCES Event (event_id) ON DELETE CASCADE,
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE,
+PRIMARY KEY (event_id, user_id) 
+) ENGINE = InnoDB;
+
+CREATE TABLE Group_ ( group_id INT AUTO_INCREMENT, 
+name VARCHAR(32), 
+description VARCHAR(4096),
+profilepicture VARBINARY(8000),
+privacy ENUM('Public', 'Private'), 
+PRIMARY KEY(group_id) 
+) ENGINE = InnoDB;
+
+CREATE TABLE EventOrganizes ( event_id INT,
+group_id INT,
+FOREIGN KEY (event_id) REFERENCES Event (event_id) ON DELETE CASCADE, 
+FOREIGN KEY (group_id) REFERENCES Group_ (group_id) ON DELETE CASCADE,
+PRIMARY KEY (event_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE Comment ( comment_id INT AUTO_INCREMENT,
+comment VARCHAR(256), date DATE, time TIME,
+PRIMARY KEY (comment_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE EventComment ( event_id INT,
+comment_id INT UNIQUE,
+FOREIGN KEY (event_id) REFERENCES Event (event_id) ON DELETE CASCADE,
+FOREIGN KEY (comment_id) REFERENCES Comment (comment_id) ON DELETE CASCADE, 
+PRIMARY KEY (event_id, comment_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE UserComment ( user_id INT,
+comment_id INT UNIQUE,
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE,
+FOREIGN KEY (comment_id) REFERENCES Comment (comment_id) ON DELETE CASCADE, 
+PRIMARY KEY (user_id, comment_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE CommentReply ( c_id_Reply INT UNIQUE,
+c_id_Replied INT,
+FOREIGN KEY (c_id_Reply) REFERENCES Comment (comment_id) ON DELETE CASCADE,
+FOREIGN KEY (c_id_Replied) REFERENCES Comment (comment_id) ON DELETE CASCADE, 
+PRIMARY KEY (c_id_Reply)
+) ENGINE = InnoDB;
+
+CREATE TABLE UserFriend ( user_id1 INT,
+user_id2 INT,
+PRIMARY KEY (user_id1, user_id2), 
+FOREIGN KEY (user_id1) REFERENCES User (user_id) ON DELETE CASCADE, 
+FOREIGN KEY (user_id2) REFERENCES User (user_id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE FriendRequest ( user_id1 INT,
+user_id2 INT,
+status ENUM('accepted', 'rejected','not replied'),
+FOREIGN KEY (user_id1) REFERENCES User (user_id) ON DELETE CASCADE, 
+FOREIGN KEY (user_id2) REFERENCES User (user_id) ON DELETE CASCADE, 
+PRIMARY KEY (user_id1, user_id2)
+) ENGINE = InnoDB;
+
+CREATE TABLE GroupParticipants ( group_id INT,
+user_id INT,
+PRIMARY KEY (group_id, user_id), 
+FOREIGN KEY (group_id) REFERENCES Group_ (group_id) ON DELETE CASCADE, 
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE GroupRequests ( group_id INT,
+user_id INT,
+decision ENUM('accepted','rejected','not replied'),
+FOREIGN KEY (group_id) REFERENCES Group_ (group_id) ON DELETE CASCADE, 
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE, 
+PRIMARY KEY (group_id, user_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE GroupAdmin ( group_id INT,
+user_id INT,
+PRIMARY KEY (group_id, user_id), 
+FOREIGN KEY (group_id) REFERENCES Group_ (group_id) ON DELETE CASCADE, 
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE Invitation ( group_id INT,
+user_id INT,
+admin_id INT,
+status ENUM('accepted','rejected','not replied'), 
+FOREIGN KEY (group_id) REFERENCES Group_ (group_id) ON DELETE CASCADE, 
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE,
+FOREIGN KEY (admin_id) REFERENCES User (user_id) ON DELETE CASCADE,
+PRIMARY KEY (group_id, user_id) ) ENGINE = InnoDB;
+
+CREATE TABLE GroupCreator ( group_id INT UNIQUE,
+user_id INT,
+FOREIGN KEY (group_id) REFERENCES Group_ (group_id) ON DELETE CASCADE, 
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE, 
+PRIMARY KEY (group_id)
+) ENGINE = InnoDB;
+
+CREATE TABLE Message ( message_id INT AUTO_INCREMENT,
+user_id INT, group_id INT,
+text VARCHAR(256),
+date DATE, time TIME,
+FOREIGN KEY (group_id) REFERENCES Group_ (group_id) ON DELETE CASCADE,
+FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE, 
+PRIMARY KEY(message_id)
+) ENGINE = InnoDB;
+
+
+INSERT INTO Country (name) VALUES ('turkey');
+INSERT INTO Country (name) VALUES ('azerbaijan');
+INSERT INTO Country (name) VALUES ('germany');
+INSERT INTO Country (name) VALUES ('england');
+INSERT INTO Country (name) VALUES ('saudi arabia');
+INSERT INTO Country (name) VALUES ('uganda');
+INSERT INTO Country (name) VALUES ('france');
+INSERT INTO Country (name) VALUES ('china');
+INSERT INTO Country (name) VALUES ('india');
+INSERT INTO Country (name) VALUES ('usa');
+
+INSERT INTO City (name,country) VALUES ('ankara', 'turkey');
+INSERT INTO City (name,country) VALUES ('istanbul', 'turkey');
+INSERT INTO City (name,country) VALUES ('edirne', 'turkey');
+INSERT INTO City (name,country) VALUES ('gaziantep', 'turkey');
+INSERT INTO City (name,country) VALUES ('izmir', 'turkey');
+INSERT INTO City (name,country) VALUES ('bolu', 'turkey');
+INSERT INTO City (name,country) VALUES ('van', 'turkey');
+INSERT INTO City (name,country) VALUES ('baku', 'azerbaijan');
+INSERT INTO City (name,country) VALUES ('goranboy', 'azerbaijan');
+INSERT INTO City (name,country) VALUES ('sumqayit', 'azerbaijan');
+INSERT INTO City (name,country) VALUES ('berlin', 'germany');
+INSERT INTO City (name,country) VALUES ('hamburg', 'germany');
+INSERT INTO City (name,country) VALUES ('essen', 'germany');
+INSERT INTO City (name,country) VALUES ('munich', 'germany');
+INSERT INTO City (name,country) VALUES ('london', 'england');
+INSERT INTO City (name,country) VALUES ('oxford', 'england');
+INSERT INTO City (name,country) VALUES ('manchester', 'england');
+INSERT INTO City (name,country) VALUES ('riyadh', 'saudi arabia');
+INSERT INTO City (name,country) VALUES ('jeddah', 'saudi arabia');
+INSERT INTO City (name,country) VALUES ('makkah', 'saudi arabia');
+INSERT INTO City (name,country) VALUES ('kampala', 'uganda');
+INSERT INTO City (name,country) VALUES ('kira', 'uganda');
+INSERT INTO City (name,country) VALUES ('lira', 'uganda');
+INSERT INTO City (name,country) VALUES ('paris', 'france');
+INSERT INTO City (name,country) VALUES ('lyon', 'france');
+INSERT INTO City (name,country) VALUES ('nice', 'france');
+INSERT INTO City (name,country) VALUES ('new york', 'usa');
+INSERT INTO City (name,country) VALUES ('los angeles', 'usa');
+INSERT INTO City (name,country) VALUES ('chicago', 'usa');
+INSERT INTO City (name,country) VALUES ('beijing', 'china');
+INSERT INTO City (name,country) VALUES ('shanghai', 'china');
+INSERT INTO City (name,country) VALUES ('tianjin', 'china');
+INSERT INTO City (name,country) VALUES ('delhi', 'india');
+INSERT INTO City (name,country) VALUES ('mumbai', 'india');
+INSERT INTO City (name,country) VALUES ('kanpur', 'india');
+
+INSERT INTO Category (name) VALUES ('Music');
+INSERT INTO Category (name) VALUES ('Dance');
+INSERT INTO Category (name) VALUES ('Books');
+INSERT INTO Category (name) VALUES ('Travel');
+INSERT INTO Category (name) VALUES ('Education');
+INSERT INTO Category (name) VALUES ('Sport');
+INSERT INTO Category (name) VALUES ('Arts');
+INSERT INTO Category (name) VALUES ('Family');
+INSERT INTO Category (name) VALUES ('Beliefs');
+INSERT INTO Category (name) VALUES ('Food & Drink');
+INSERT INTO Category (name) VALUES ('Photograpy');
+INSERT INTO Category (name) VALUES ('Language');
+INSERT INTO Category (name) VALUES ('Culture');
+INSERT INTO Category (name) VALUES ('Learning');
+INSERT INTO Category (name) VALUES ('Science');
+INSERT INTO Category (name) VALUES ('Technology');
+INSERT INTO Category (name) VALUES ('Sci-Fi & Games');
+ 
+
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Filiz Basak','Cengiz','1994-02-13','filizbasak@gmail.com','0538 888 99 00','filizbasak','63bad96ef702d2c15bbf338373b4fd60b3f49448','Female');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Sadi','Kunduroglu','1992-04-12','sadikunduroglu@gmail.com','0538 443 22 90','sadikundur','14814a8ccb0eaaba89743a2bb48a19513c7ede86','Male');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Esref','Ozturk','1995-10-02','esref_40@gmail.com','0542 332 69 64','esref','051fd8784265f652ead7431624dd374d217d53b4','Male');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Mete','Donmez','1995-10-02','metedonmez@gmail.com','0542 300 69 64','mete','db11403b98fc19485aa35decd2ae7311b5eafbbe','Male');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Reyhan','Oflaz','1990-02-28','reyhann@gmail.com','0542 300 69 44','reyhan','e43c04802c64998bb305ebefb746db81ddcf6f09','Female');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Ken','Aydin','1999-04-18','kenaydin@gmail.com','0532 301 69 44','ken09','2005e470e5c29fe3bf4a81936fca5ed5d92a66ef','Male');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Samet','Demir','1997-12-08','sametdemir@gmail.com','0542 300 69 99','sametdemir','74591c8ea5543dc5c1ccd93ef33ac004a0f7f3fb','Male');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Ahmet','Malal','1996-12-12','malal@gmail.com','0542 665 99 43','malal','f8e69af10636c1c466762aca22f225d871fad7ed','Male');
+INSERT INTO User (firstname,lastname,birthday,email,phone_no,nickname,password,gender) VALUES ('Ibrahim','Mammadov','1993-04-18','mammadov@gmail.com','0543 887 69 94','ibrahim','3b2f097db414ae173a3525cab26e33d3bc6ac59a','Male');
+ 
+INSERT INTO Group_ (name,description,privacy) VALUES('Ankara Board Games Meetup','What we are about? This is an English friendly , Meetup/Interest group for tabletop games of all sorts. Events can be held at local pubs or the living rooms of gracious hosts.			We generally meet in the Çankaya/Kızılay neighborhoods . Game events include:			Eurogames: Settlers of Catan, Carcassone, Terra Mystica, Dominion,			Party games: Cranium, Apples to Apples, Werewolf, Coup, Cards against Humanity			Strategy and Tactics Games: Axis and Allies, Game of Thrones, Lords of Helles, Terraforming Mars			Legacy Games: Gloomhaven, Pandemic, Risk			RPGs: D&D, Numenera, Rifts, etc The goal is to have several games going at once, bring your favorites, or try something new from another member. Therell be another game you can join.			Got a game youd like to play? Be sure to share your suggestions!			Just a few FYIs/ground rules for these events...			Please be respectful of the facility and help clean up afterwards.			Attendance is free.			For coffee shop or restaurant locations, please purchase a cup of coffee or sandwich to support the venue. For public locations or events at members homes, feel free to bring snacks and beverages.			For MeetUps with a set number of people, we ask that you respect the limit and wait list. Certain locations have limited seating and space so to continue to utilize certain venues, we have to respect their space and regular business by not overcrowding it.			Thanks for joining the group! We look forward to meeting you!','Public');
+
+INSERT INTO GroupParticipants (group_id,user_id) VALUES ('1','1');
+INSERT INTO GroupParticipants (group_id,user_id) VALUES ('1','2');
+INSERT INTO GroupParticipants (group_id,user_id) VALUES ('1','3');
+INSERT INTO GroupParticipants (group_id,user_id) VALUES ('1','4');
+INSERT INTO GroupParticipants (group_id,user_id) VALUES ('1','5');
+
+INSERT INTO GroupAdmin (group_id,user_id) VALUES ('1','6');
+
+INSERT INTO GroupCreator (group_id,user_id) VALUES ('1','6');
+
+INSERT INTO Event (title,description,date,time,address,city,country,privacy,maxnumberofmember) VALUES ('Pirate Board Game Night!','ARRRRR!!!! Come join us for Pirate Night at tCrossroads for all yer dear plank-walking & salty board games! Winners of each game goes on to play a final battle with a grand prize, yer very own copy of Port Royal! Feel free to bring all your favorite pirate gear and costumes!','2019-04-28','07:30:00 PM','Ahmet Mithat Efendi Sk. 5','ankara','turkey','Public',100);
+INSERT INTO Event (title,description,date,time,address,city,country,privacy,maxnumberofmember) VALUES ('BOARD & BREW night!','Come join us at the Crossroads, grab a tasty beverage, break out your favorite game or jump in on anothers and have some fun!Please purchase food or a beverage to support the venue.','2019-04-02','07:30:00 PM','Ahmet Mithat Efendi Sk. 5','ankara','turkey','Public',100);
+INSERT INTO Event (title,description,date,time,address,city,country,privacy,maxnumberofmember) VALUES ('BOARD & BREW night!','Come join us at the Crossroads, grab a tasty beverage, break out your favorite game or jump in on anothers and have some fun!Please purchase food or a beverage to support the venue.','2019-04-16','07:30:00 PM','Ahmet Mithat Efendi Sk. 5','ankara','turkey','Public',100);
+INSERT INTO Event (title,description,date,time,address,city,country,privacy,maxnumberofmember) VALUES ('BOARD & BREW night!','Come join us at the Crossroads, grab a tasty beverage, break out your favorite game or jump in on anothers and have some fun!Please purchase food or a beverage to support the venue.','2019-06-11','07:30:00 PM','Ahmet Mithat Efendi Sk. 5','ankara','turkey','Public',100);
+INSERT INTO Event (title,description,date,time,address,city,country,privacy,maxnumberofmember) VALUES ('BOARD & BREW night!','Come join us at the Crossroads, grab a tasty beverage, break out your favorite game or jump in on anothers and have some fun!Please purchase food or a beverage to support the venue.','2019-06-25','07:30:00 PM','Ahmet Mithat Efendi Sk. 5','ankara','turkey','Public',100);
+INSERT INTO Event (title,description,date,time,address,city,country,privacy,maxnumberofmember) VALUES ('Da Vinci Board Game Cafe 2nd Anniversary Party','ARRRRR!!!! Come join us for Pirate Night at tCrossroads for all yer dear plank-walking & salty board games! Winners of each game goes on to play a final battle with a grand prize, yer very own copy of Port Royal! Feel free to bring all your favorite pirate gear and costumes!','2019-05-28','07:30:00 PM','Bahçelievler Mah. Kazakistan Cad. No:69-71/A','ankara','turkey','Public',100);
+
+INSERT INTO EventOrganizes (event_id,group_id) VALUES ('1','1');
+INSERT INTO EventOrganizes (event_id,group_id) VALUES ('1','2');
+INSERT INTO EventOrganizes (event_id,group_id) VALUES ('1','3');
+INSERT INTO EventOrganizes (event_id,group_id) VALUES ('1','4');
+INSERT INTO EventOrganizes (event_id,group_id) VALUES ('1','5');
+INSERT INTO EventOrganizes (event_id,group_id) VALUES ('1','6');
+
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('1','1','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('1','2','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('1','3','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('1','4','not replied');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('1','5','not replied');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('2','1','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('2','2','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('2','3','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('2','4','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('2','5','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('3','1','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('3','2','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('3','3','not replied');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('3','4','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('3','5','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('4','1','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('4','2','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('4','3','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('4','4','not replied');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('4','5','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('5','1','not coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('5','2','not replied');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('5','3','not replied');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('5','4','coming');
+INSERT INTO EventParticipants (event_id, user_id, usersDecision) VALUES ('5','5','not coming');
+
+
+INSERT INTO EventCategory (event_id,category_name) VALUES ('1','Education');
+INSERT INTO EventCategory (event_id,category_name) VALUES ('2','Arts');
+INSERT INTO EventCategory (event_id,category_name) VALUES ('3','Dance');
+INSERT INTO EventCategory (event_id,category_name) VALUES ('4','Culture'); 
+INSERT INTO EventCategory (event_id,category_name) VALUES ('5','Dance');
+INSERT INTO EventCategory (event_id,category_name) VALUES ('6','Science'); 
+
+
+INSERT INTO EventHost (event_id, host_id) VALUES ('1','6');
+INSERT INTO EventHost (event_id, host_id) VALUES ('2','6');
+INSERT INTO EventHost (event_id, host_id) VALUES ('3','6');
+INSERT INTO EventHost (event_id, host_id) VALUES ('4','6');
+INSERT INTO EventHost (event_id, host_id) VALUES ('5','6');
+INSERT INTO EventHost (event_id, host_id) VALUES ('6','6');
+
+
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('1','3',75);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('2','1',95);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('2','2',50);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('2','3',90);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('3','4',75);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('3','5',25);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('4','2',90);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('4','3',80);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('4','5',70);
+INSERT INTO UserRate (event_id, user_id, rate) VALUES ('5','4',60);
+
+INSERT INTO UserFriend (user_id1,user_id2) VALUES ('1','2');
+INSERT INTO UserFriend (user_id1,user_id2) VALUES ('1','3');
+INSERT INTO UserFriend (user_id1,user_id2) VALUES ('1','4');
+INSERT INTO UserFriend (user_id1,user_id2) VALUES ('2','3');
+INSERT INTO UserFriend (user_id1,user_id2) VALUES ('3','4');
+INSERT INTO UserFriend (user_id1,user_id2) VALUES ('4','5');
+INSERT INTO UserFriend (user_id1,user_id2) VALUES ('7','8');
+
+INSERT INTO FriendRequest(user_id1, user_id2, status) VALUES('2', '4', 'not replied');
+INSERT INTO FriendRequest(user_id1, user_id2, status) VALUES('3', '5', 'rejected');
+INSERT INTO FriendRequest(user_id1, user_id2, status) VALUES('7', '8', 'accepted');
+
+INSERT INTO Invitation (group_id,user_id,admin_id,status) VALUES ('1','7','6','not replied');
+INSERT INTO Invitation (group_id,user_id,admin_id,status) VALUES ('1','8','6','rejected');
+INSERT INTO Invitation (group_id,user_id,admin_id,status) VALUES ('1','9','6','not replied');
+
+INSERT INTO GroupRequests (group_id,user_id,decision) VALUES ('1','1','accepted');
+INSERT INTO GroupRequests (group_id,user_id,decision) VALUES ('1','2','accepted');
+INSERT INTO GroupRequests (group_id,user_id,decision) VALUES ('1','3','accepted');
+INSERT INTO GroupRequests (group_id,user_id,decision) VALUES ('1','4','accepted');
+INSERT INTO GroupRequests (group_id,user_id,decision) VALUES ('1','5','accepted');
+INSERT INTO GroupRequests (group_id,user_id,decision) VALUES ('1','7','rejected');
+INSERT INTO GroupRequests (group_id,user_id,decision) VALUES ('1','8','not replied');
+
+INSERT INTO Message (user_id,group_id,text,date,time) VALUES ('6','1','Hey everyone! Just moved to Ankara at the beginning of the year, looking to assemble a formidable army of boardgamers to spend evenings in the company of friends and tasty beverages!','2018-02-05','03:00:00 PM');
+INSERT INTO Message (user_id,group_id,text,date,time) VALUES ('2','1','Well Job!','2018-02-06','08:00:00 PM');
+INSERT INTO Message (user_id,group_id,text,date,time) VALUES ('3','1','What a nice news it is!','2018-02-06','09:00:00 PM');
+
+INSERT INTO Comment (comment,date,time) VALUES ('Can you describe more?','2019-05-05','10:00:00 AM');
+INSERT INTO Comment (comment,date,time) VALUES ('Who is coming?','2019-05-01','08:00:00 PM');
+INSERT INTO Comment (comment,date,time) VALUES ('I will definitely come','2019-05-05','10:45:00 AM');
+INSERT INTO Comment (comment,date,time) VALUES ('Who will come from Eryaman?','2019-05-05','10:45:00 AM');
+INSERT INTO Comment (comment,date,time) VALUES ('I will','2019-05-05','10:45:00 AM');
+INSERT INTO Comment (comment,date,time) VALUES ('Awesome!!','2019-05-02','07:00:00 PM');
+
+INSERT INTO EventComment (event_id,comment_id) VALUES ('1','1');
+INSERT INTO EventComment (event_id,comment_id) VALUES ('2','2');
+INSERT INTO EventComment (event_id,comment_id) VALUES ('2','3');
+INSERT INTO EventComment (event_id,comment_id) VALUES ('3','4');
+INSERT INTO EventComment (event_id,comment_id) VALUES ('3','5');
+INSERT INTO EventComment (event_id,comment_id) VALUES ('3','6');
+
+INSERT INTO UserComment (user_id,comment_id) VALUES ('3','1');
+INSERT INTO UserComment (user_id,comment_id) VALUES ('2','2');
+INSERT INTO UserComment (user_id,comment_id) VALUES ('4','3');
+INSERT INTO UserComment (user_id,comment_id) VALUES ('2','4');
+INSERT INTO UserComment (user_id,comment_id) VALUES ('1','5');
+INSERT INTO UserComment (user_id,comment_id) VALUES ('2','6');
+
+INSERT INTO CommentReply (c_id_Reply,c_id_Replied) VALUES ('3','2');
+INSERT INTO CommentReply (c_id_Reply,c_id_Replied) VALUES ('5','4');
