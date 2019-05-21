@@ -31,7 +31,7 @@ session_start();
                                 <input type="radio" name="privacy" value="Private" id="private">
                                 <label for="private" class="px-3">Private</label>
                             </div>
-                            <a class="btn btn-lg btn-success" src="#">Add admin</a>
+                            
                         </div>
                     </div>
                     <button type="submit" class="btn btn-lg btn-primary">Submit</button>

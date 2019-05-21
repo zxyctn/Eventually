@@ -13,7 +13,7 @@ $city = $_POST['city'];
 $group_id = $_GET['group_id'];
 $flag = $_GET['f'];
 
-$country = $_POST['country'];
+$category = $_POST['category'];
 $privacy = $_POST['privacy'];
 $maxnumberofmember = $_POST['maxnumberofmember'];
 $profilepicture = $_POST['profilepicture'];
@@ -44,6 +44,10 @@ while ($user = mysqli_fetch_object($res2)) {
         mysqli_stmt_execute($stmt0);
     }
 }
+
+$sql4 = "INSERT INTO EventCategory (category_name, event_id) VALUES ('$category', '$event->event_id')";
+$stmt04 = mysqli_prepare($db, $sql4);
+mysqli_stmt_execute($stmt04);
 
 header ("Location: event.php?id=$event->event_id"); 
 ?>
