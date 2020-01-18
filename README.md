@@ -7,5 +7,3 @@ A social platform for hosting events that is being developed as a term project f
 - Ahmet Malal
 - Ibrahim Mammadov
 - Ali Babayev
-
-#### [Project Website](http://dijkstra.ug.bcc.bilkent.edu.tr/~ahmet.malal/data/index.php)
